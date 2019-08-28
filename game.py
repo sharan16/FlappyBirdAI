@@ -79,4 +79,11 @@ def main():
     pygame.quit()
     quit()
 
-main()
+def run(config_file_path):
+    config = neat.config.Config(neat.DefaultGenome,neat.DefaultReproduction,neat.DefaultSpeciesSet,neat.DefaultStagnation,config_file_path)
+    p = neat.Population(config)
+    p.add_reporter(neat.StdOutReporter(True))
+
+# local_dir = os.path.dirname(__file__)
+# config_file_path = os.path.join(local_dir,'neatconfig.txt')
+# run(config_file_path)

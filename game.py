@@ -12,6 +12,44 @@ IMGS_BIRD = [pygame.transform.scale2x(pygame.image.load(os.path.join('imgs','bir
 IMG_PIPE = pygame.transform.scale2x(pygame.image.load(os.path.join('imgs','pipe.png')))
 IMG_BG = pygame.transform.scale2x(pygame.image.load(os.path.join('imgs','bg.png')))
 IMG_BASE = pygame.transform.scale2x(pygame.image.load(os.path.join('imgs','base.png')))
+class Pipe:
+    GAP = 200
+    VEL = 5
+
+    def __init__(self, x):
+        self.x = x
+        self.height = 0
+        self.gap = 100
+
+        self.y_top = 0
+        self.y_bottom = 0
+        self.PIPE_TOP = pygame.transform.flip(IMG_PIPE,False,True)
+        self.PIPE_BOTTOM = IMG_PIPE
+
+        self.passed = false
+        self.set_height()
+    def set_height(self)
+        self.height = random.randrange(50,400)
+        self.top = self.height - self.PIPE_TOP.get_height()
+        self.bottom - self.heigh + self.GAP
+    def move(self)
+        self.x -= self.VEL
+    def draw(self,win):
+        win.blit(self.PIPE_TOP,(self.x,self.y_top))
+        win.blit(self.PIPE_BOTTOM,(self.x,self.y_bottom))
+    def collide(self,bird):
+        bird_mask = bird.mask()
+        top_mask = pygame.mask.from_surface(self.PIPE_TOP)
+        bottom_mask = pygame.mask.from_surface(self.PIPE_BOTTOM)
+
+        top_offset = (self.x - bird.x,self.top - round(bird.y))
+        bottom_offset = (self.x-bird.x,self.bottom - round(bird.y))
+
+        b_point = bird_mask.overlap(bottom_mask,bottom_offset)
+        t_point = bird_mask.overlap(top_mask, top_offset)
+
+        return (t_point or b_point)
+
 
 class Bird:
     IMGS = IMGS_BIRD
@@ -62,7 +100,6 @@ class Bird:
 
 def draw_window(win,bird):
     win.blit(IMG_BG,(0,0))
-    bird.update()
     bird.draw(win)
     pygame.display.update()
 
@@ -87,3 +124,4 @@ def run(config_file_path):
 # local_dir = os.path.dirname(__file__)
 # config_file_path = os.path.join(local_dir,'neatconfig.txt')
 # run(config_file_path)
+main()

@@ -4,7 +4,7 @@ import neat
 import os
 import random
 import math
-
+pygame.font.init()
 WIN_W = 570
 WIN_H = 800
 
@@ -12,6 +12,7 @@ IMGS_BIRD = [pygame.transform.scale2x(pygame.image.load(os.path.join('imgs','bir
 IMG_PIPE = pygame.transform.scale2x(pygame.image.load(os.path.join('imgs','pipe.png')))
 IMG_BG = pygame.transform.scale2x(pygame.image.load(os.path.join('imgs','bg.png')))
 IMG_BASE = pygame.transform.scale2x(pygame.image.load(os.path.join('imgs','base.png')))
+FONT_STAT = pygame.font.SysFont("comicsans",50)
 class Base:
     VEL = 5
     WIDTH = IMG_BASE.get_width()
@@ -131,12 +132,13 @@ class Bird:
         return pygame.mask.from_surface(self.img)
 
 
-def draw_window(win, bird,pipes,base):
+def draw_window(win, bird,pipes,base,score):
     win.blit(IMG_BG,(0,0))
     for pipe in pipes:
         pipe.draw(win)
     base.draw(win)
-
+    text = FONT_STAT.render("Score: " + str(score),1,(255,255,255))
+    win.blit(text, (WIN_W-10-text.get_width(),10))
     bird.draw(win)
     pygame.display.update()
 
@@ -153,7 +155,7 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-            if event.type == KEYDOWN:
+            if event.type == pygame.KEYDOWN:
                 print('pressed')
         for i, pipe in enumerate(pipes):
             if (pipe.collide(bird)):
@@ -171,7 +173,7 @@ def main():
             add_pipe = False
   
         base.move()
-        draw_window(win, bird,pipes,base)
+        draw_window(win, bird,pipes,base,score)
     pygame.quit()
     quit()
 

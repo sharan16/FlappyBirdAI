@@ -180,7 +180,7 @@ def main(genomes, config):
             bird.update()
             ge[b].fitness += 0.1
 
-            output = neat.nn.FeedForwardNetwork.create(ge[b], config).activate((bird.y,abs(bird.y - pipes[pipe_ind].height),abs(bird.y-pipes[pipe_ind].bottom))) 
+            output = neat.nn.FeedForwardNetwork.create(ge[b], config).activate((bird.y-pipes[pipe_ind].height,bird.x-pipes[pipe_ind].x)) 
             
             if output[0]> 0.5:
                 bird.jump()

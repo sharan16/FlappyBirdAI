@@ -102,13 +102,21 @@ class Bird:
     
     def update(self):
         self.tick_count += 1
-        d = self.vel*self.tick_count + 2*(self.tick_count**2)
+
+        d = self.vel*self.tick_count + 0.5*3*(self.tick_count**2)
+
         if d > 16:
-            d = 16
+            d = (d/abs(d)) * 16
         elif d<0:
-            d = -2
+            d -=2
         self.y += d
-    
+        if d < 0 or self.y < self.height + 50:  # tilt up
+            if self.tilt < self.MAX_ROT:
+                self.tilt = self.MAX_ROT
+        else:  # tilt down
+            if self.tilt > -90:
+                self.tilt -= self.VEL_ROT
+        print(d)
     def jump(self):
         self.vel = -10.5
         self.tick_count = 0 
@@ -125,13 +133,17 @@ class Bird:
         if self.img_count > 13:
             self.img_count = 0
 
-        rotated_img = pygame.transform.rotate(self.img,self.tilt)
-        new_rect = rotated_img.get_rect(center = self.img.get_rect(topleft = (self.x,self.y)).center)
-        win.blit(rotated_img,new_rect.topleft)
+        # tilt the bird
+        blitRotateCenter(win, self.img, (self.x, self.y), self.tilt)
     
     def get_mask(self):
         return pygame.mask.from_surface(self.img)
 
+def blitRotateCenter(surf, image, topleft, angle):
+    rotated_image = pygame.transform.rotate(image, angle)
+    new_rect = rotated_image.get_rect(center = image.get_rect(topleft = topleft).center)
+
+    surf.blit(rotated_image, new_rect.topleft)
 
 def draw_window(win, birds,pipes,base,score):
     win.blit(IMG_BG,(0,0))
@@ -139,7 +151,9 @@ def draw_window(win, birds,pipes,base,score):
         pipe.draw(win)
     base.draw(win)
     text = FONT_STAT.render("Score: " + str(score),1,(255,255,255))
+    num_alive = FONT_STAT.render("Birds Alive: " + str(len(birds)),1,(255,255,255))
     win.blit(text, (WIN_W-10-text.get_width(),10))
+    win.blit(num_alive, (WIN_W-10-num_alive.get_width(),40))
     for bird in birds:
         bird.draw(win)
     pygame.display.update()
@@ -156,11 +170,12 @@ def main(genomes, config):
         ge.append(g)
         birds.append(Bird(230,350))
 
-    
+    clock = pygame.time.Clock()
     run = True
     add_pipe = False
     score = 0
     while run:
+        clock.tick(30)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 print('Clicked')
@@ -180,9 +195,9 @@ def main(genomes, config):
             bird.update()
             ge[b].fitness += 0.1
 
-            output = neat.nn.FeedForwardNetwork.create(ge[b], config).activate((bird.y-pipes[pipe_ind].height,bird.x-pipes[pipe_ind].x)) 
+            output = neat.nn.FeedForwardNetwork.create(ge[b], config).activate(((bird.y-pipes[pipe_ind].height)/450,(pipes[pipe_ind].x)/500))
             
-            if output[0]> 0.5:
+            if output[0]> 0:
                 bird.jump()
         
         for i, pipe in enumerate(pipes):
@@ -203,10 +218,11 @@ def main(genomes, config):
                 g.fitness +=5
             pipes.append(Pipe(700))
             add_pipe = False
+            score+=1
         for b,bird in enumerate(birds):
             if bird.y + bird.img.get_height()>730 or bird.y < 0:
-              birds.pop(b)
-              ge.pop(b)
+                birds.pop(b)
+                ge.pop(b)
 
         base.move()
         draw_window(win, birds,pipes,base,score)
@@ -216,7 +232,7 @@ def run(config_file_path):
     config = neat.config.Config(neat.DefaultGenome,neat.DefaultReproduction,neat.DefaultSpeciesSet,neat.DefaultStagnation,config_file_path)
     p = neat.Population(config)
     # p.add_reporter(neat.StdOutReporter(True))
-    winner = p.run(main,50)
+    winner = p.run(main,100)
 
 local_dir = os.path.dirname(__file__)
 config_file_path = os.path.join(local_dir,'neatconfig.txt')

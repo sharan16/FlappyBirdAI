@@ -87,8 +87,7 @@ class Pipe():
 
 class Bird:
     IMGS = IMGS_BIRD
-    MAX_ROT = 25
-    VEL_ROT = 20
+    MAX_ROT = 30
     
     def __init__(self,x,y):
         self.x = x
@@ -110,13 +109,9 @@ class Bird:
         elif d<0:
             d -=2
         self.y += d
-        if d < 0 or self.y < self.height + 50:  # tilt up
-            if self.tilt < self.MAX_ROT:
-                self.tilt = self.MAX_ROT
-        else:  # tilt down
-            if self.tilt > -90:
-                self.tilt -= self.VEL_ROT
-        print(d)
+
+        self.tilt = -translate(d,-20,20,-self.MAX_ROT,self.MAX_ROT)
+    
     def jump(self):
         self.vel = -10.5
         self.tick_count = 0 
@@ -138,6 +133,17 @@ class Bird:
     
     def get_mask(self):
         return pygame.mask.from_surface(self.img)
+
+def translate(value, leftMin, leftMax, rightMin, rightMax):
+    # Figure out how 'wide' each range is
+    leftSpan = leftMax - leftMin
+    rightSpan = rightMax - rightMin
+
+    # Convert the left range into a 0-1 range (float)
+    valueScaled = float(value - leftMin) / float(leftSpan)
+
+    # Convert the 0-1 range into a value in the right range.
+    return rightMin + (valueScaled * rightSpan)
 
 def blitRotateCenter(surf, image, topleft, angle):
     rotated_image = pygame.transform.rotate(image, angle)
